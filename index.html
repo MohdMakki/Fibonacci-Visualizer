@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fibonacci Visualizer</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="shortcut icon" href="logo.png" type="image/x-icon">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --primary: #6366f1;
+      --primary-dark: #4f46e5;
+      --secondary: #f59e0b;
+      --dark: #1f2937;
+      --light: #f9fafb;
+      --grey: #9ca3af;
+      --success: #10b981;
+      --error: #ef4444;
+    }
+    
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    
+    body {
+      background-color: var(--light);
+      color: var(--dark);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+    }
+    
+    .header {
+      width: 100%;
+      background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+      color: white;
+      padding: 1.5rem 0;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+    
+    .header::before {
+      content: "";
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: repeating-linear-gradient(
+        transparent,
+        transparent 20px,
+        rgba(255, 255, 255, 0.05) 20px,
+        rgba(255, 255, 255, 0.05) 40px
+      );
+      transform: rotate(30deg);
+      animation: headerPattern 60s linear infinite;
+    }
+    
+    @keyframes headerPattern {
+      0% {
+        transform: translateX(-50%) rotate(30deg);
+      }
+      100% {
+        transform: translateX(0%) rotate(30deg);
+      }
+    }
+    
+    .header-content {
+      position: relative;
+      z-index: 10;
+    }
+    
+    .header h1 {
+      font-size: 2.75rem;
+      margin-bottom: 0.5rem;
+      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+    }
+    
+    .header p {
+      font-size: 1.2rem;
+      opacity: 0.9;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+    
+    .container {
+      width: 90%;
+      max-width: 1000px;
+      margin: 2rem auto;
+      background-color: white;
+      border-radius: 1rem;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+      overflow: hidden;
+      transform: translateY(20px);
+      opacity: 0;
+      animation: fadeIn 0.6s ease forwards;
+    }
+    
+    @keyframes fadeIn {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    .card {
+      padding: 2rem;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    }
+    
+    .card:last-child {
+      border-bottom: none;
+    }
+    
+    .card-title {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-size: 1.5rem;
+      margin-bottom: 1.5rem;
+      color: var(--primary-dark);
+      font-weight: 600;
+    }
+    
+    .input-group {
+      margin-bottom: 1.5rem;
+    }
+    
+    .input-group:last-of-type {
+      margin-bottom: 2rem;
+    }
+    
+    label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-size: 1.1rem;
+      font-weight: 500;
+      color: var(--dark);
+    }
+    
+    input[type="number"] {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      font-size: 1rem;
+      border: 2px solid var(--grey);
+      border-radius: 0.5rem;
+      transition: all 0.3s ease;
+      outline: none;
+    }
+    
+    input[type="number"]:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+    }
+    
+    .button-group {
+      display: flex;
+      justify-content: center;
+      gap: 1rem;
+    }
+    
+    button {
+      padding: 0.75rem 1.5rem;
+      font-size: 1.1rem;
+      font-weight: 600;
+      background-color: var(--primary);
+      color: white;
+      border: none;
+      border-radius: 0.5rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      box-shadow: 0 4px 6px -1px rgba(99, 102, 241, 0.3);
+    }
+    
+    button:hover {
+      background-color: var(--primary-dark);
+      transform: translateY(-2px);
+    }
+    
+    button:active {
+      transform: translateY(0);
+    }
+    
+    button.secondary {
+      background-color: var(--light);
+      color: var(--dark);
+      border: 1px solid var(--grey);
+      box-shadow: none;
+    }
+    
+    button.secondary:hover {
+      background-color: var(--grey);
+      color: white;
+    }
+    
+    .output-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+    }
+    
+    .sequence-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      margin-top: 1.5rem;
+    }
+    
+    .fib-number {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 3.5rem;
+      height: 3.5rem;
+      font-size: 1.2rem;
+      font-weight: 600;
+      background-color: var(--primary);
+      color: white;
+      border-radius: 50%;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+      opacity: 0;
+      transform: scale(0.5);
+      transition: all 0.3s ease;
+    }
+    
+    .visualization {
+      margin-top: 2rem;
+      border-radius: 0.5rem;
+      background-color: rgba(99, 102, 241, 0.1);
+      padding: 1.5rem;
+      margin-bottom: 1rem;
+      overflow-x: auto;
+      max-height: 350px;
+      opacity: 0;
+      transform: translateY(10px);
+      transition: all 0.5s ease;
+    }
+    
+    .visualization.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    
+    .spiral-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 300px;
+    }
+    
+    .spiral-svg {
+      max-width: 100%;
+      height: auto;
+    }
+    
+    #about {
+      padding: 2rem;
+    }
+    
+    #about h1 {
+      font-size: 1.75rem;
+      margin-bottom: 1.25rem;
+      color: var(--primary-dark);
+    }
+    
+    #about p {
+      font-size: 1.1rem;
+      line-height: 1.7;
+      color: var(--dark);
+      margin-bottom: 1rem;
+    }
+    
+    .explanation {
+      margin-top: 1.5rem;
+      padding: 1.25rem;
+      background-color: rgba(99, 102, 241, 0.05);
+      border-left: 4px solid var(--primary);
+      border-radius: 0.5rem;
+    }
+    
+    .explanation h3 {
+      font-size: 1.25rem;
+      margin-bottom: 0.75rem;
+      color: var(--primary-dark);
+    }
+    
+    .formula {
+      font-family: 'Courier New', monospace;
+      font-weight: bold;
+      background-color: rgba(99, 102, 241, 0.1);
+      padding: 0.5rem;
+      border-radius: 0.25rem;
+      margin: 1rem 0;
+      display: inline-block;
+    }
+    
+    .error-message {
+      color: var(--error);
+      font-size: 0.9rem;
+      margin-top: 0.5rem;
+      display: none;
+    }
+    
+    .golden-ratio {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: 1.5rem;
+      padding: 1rem;
+      background-color: var(--light);
+      border-radius: 0.5rem;
+    }
+    
+    .golden-ratio span {
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: var(--secondary);
+    }
+    
+    @media (max-width: 768px) {
+      .header h1 {
+        font-size: 2.2rem;
+      }
+      
+      .header p {
+        font-size: 1rem;
+      }
+      
+      .container {
+        width: 95%;
+      }
+      
+      .card {
+        padding: 1.5rem;
+      }
+      
+      .fib-number {
+        width: 3rem;
+        height: 3rem;
+        font-size: 1rem;
+      }
+    }
+
+    /* Loading animation */
+    .loading {
+      display: none;
+      justify-content: center;
+      margin: 1rem 0;
+    }
+
+    .loading div {
+      width: 12px;
+      height: 12px;
+      background-color: var(--primary);
+      border-radius: 50%;
+      margin: 0 5px;
+      animation: bounce 0.5s infinite alternate;
+    }
+
+    .loading div:nth-child(2) {
+      animation-delay: 0.1s;
+    }
+
+    .loading div:nth-child(3) {
+      animation-delay: 0.2s;
+    }
+
+    @keyframes bounce {
+      to {
+        transform: translateY(-10px);
+      }
+    }
+
+    /* Theme toggle */
+    .theme-toggle {
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      background: rgba(255, 255, 255, 0.2);
+      border-radius: 50%;
+      padding: 0.5rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .theme-toggle:hover {
+      transform: rotate(30deg);
+    }
+
+    body.dark-mode {
+      background-color: #121212;
+      color: #e0e0e0;
+    }
+
+    body.dark-mode .container {
+      background-color: #1e1e1e;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2);
+    }
+
+    body.dark-mode .card-title,
+    body.dark-mode #about h1,
+    body.dark-mode .explanation h3 {
+      color: var(--primary);
+    }
+
+    body.dark-mode input[type="number"] {
+      background-color: #2d2d2d;
+      border-color: #3d3d3d;
+      color: #e0e0e0;
+    }
+
+    body.dark-mode .card {
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    body.dark-mode .explanation {
+      background-color: rgba(99, 102, 241, 0.1);
+    }
+
+    body.dark-mode .golden-ratio {
+      background-color: #2d2d2d;
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="theme-toggle" onclick="toggleTheme()">
+      <i class="fas fa-moon"></i>
+    </div>
+    <div class="header-content">
+      <h1>Fibonacci Visualizer</h1>
+      <p>Explore the mathematical beauty of the Fibonacci sequence</p>
+    </div>
+  </div>
+  
+  <div class="container">
+    <div class="card" id="Input">
+      <div class="card-title">
+        <i class="fas fa-pencil-alt"></i> Input Parameters
+      </div>
+      
+      <div class="input-group">
+        <label for="fnum">Starting number:</label>
+        <input type="number" id="fnum" value="0" min="0">
+        <div class="error-message" id="fnum-error">Please enter a valid number</div>
+      </div>
+      
+      <div class="input-group">
+        <label for="TextInput">Number of Fibonacci terms to generate:</label>
+        <input type="number" id="TextInput" value="10" min="1" max="50">
+        <div class="error-message" id="count-error">Please enter a number between 1 and 50</div>
+      </div>
+      
+      <div class="button-group">
+        <button onclick="generate()">
+          <i class="fas fa-play"></i> Generate
+        </button>
+        <button class="secondary" onclick="resetForm()">
+          <i class="fas fa-redo"></i> Reset
+        </button>
+      </div>
+    </div>
+    
+    <div class="card" id="Output">
+      <div class="output-header">
+        <div class="card-title">
+          <i class="fas fa-chart-line"></i> Fibonacci Sequence
+        </div>
+        <div class="loading" id="loading">
+          <div></div>
+          <div></div>
+          <div></div>
+        </div>
+      </div>
+      
+      <div class="sequence-container" id="fibo-container"></div>
+      
+      <div class="visualization" id="visualization">
+        <div class="spiral-container" id="spiral-container"></div>
+      </div>
+      
+      <div class="golden-ratio" id="golden-ratio">
+        <span>As the sequence progresses, the ratio between consecutive numbers approaches φ (phi): 1.61803...</span>
+      </div>
+    </div>
+    
+    <div class="card" id="about">
+      <div class="card-title">
+        <i class="fas fa-info-circle"></i> About the Fibonacci Sequence
+      </div>
+      
+      <p>The Fibonacci sequence is a series of numbers where each number is the sum of the two preceding ones. It was first described by Leonardo of Pisa (known as Fibonacci) in his book Liber Abaci (1202).</p>
+      
+      <p>The sequence commonly starts with 0 and 1, although some variations begin with 1 and 1 or 1 and 2. After the starting values, each number is found by adding the two previous numbers.</p>
+      
+      <div class="explanation">
+        <h3>The Fibonacci Formula</h3>
+        <p>Mathematically, the Fibonacci sequence F(n) is defined by the recurrence relation:</p>
+        <div class="formula">F(n) = F(n-1) + F(n-2)</div>
+        <p>with seed values F(0) = 0 and F(1) = 1.</p>
+        
+        <h3>The Golden Ratio Connection</h3>
+        <p>As the Fibonacci sequence progresses, the ratio between consecutive Fibonacci numbers approaches the golden ratio (φ ≈ 1.618033988749895). This ratio appears throughout nature, art, and architecture.</p>
+      </div>
+    </div>
+  </div>
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+  <script>
+    // Generate Fibonacci sequence
+    function fibonacci(start, count) {
+      const sequence = [];
+      let a = parseInt(start);
+      let b = a === 0 ? 1 : a + 1;
+      
+      sequence.push(a);
+      sequence.push(b);
+      
+      for (let i = 2; i < count; i++) {
+        const next = a + b;
+        sequence.push(next);
+        a = b;
+        b = next;
+      }
+      
+      return sequence;
+    }
+    
+    // Display Fibonacci numbers with animation
+    function displayFibonacci(sequence) {
+      const container = document.getElementById('fibo-container');
+      container.innerHTML = '';
+      
+      sequence.forEach((num, index) => {
+        const fibElement = document.createElement('div');
+        fibElement.className = 'fib-number';
+        fibElement.textContent = num;
+        container.appendChild(fibElement);
+        
+        // Animate each number with delay
+        setTimeout(() => {
+          fibElement.style.opacity = '1';
+          fibElement.style.transform = 'scale(1)';
+        }, 100 * index);
+      });
+      
+      // Calculate and display golden ratio approximation
+      if (sequence.length >= 10) {
+        const lastIndex = sequence.length - 1;
+        const ratio = (sequence[lastIndex] / sequence[lastIndex - 1]).toFixed(8);
+        document.getElementById('golden-ratio').innerHTML = 
+          `<span>The ratio of the last two numbers (${sequence[lastIndex]} ÷ ${sequence[lastIndex - 1]}) = ${ratio}, approaching the Golden Ratio φ (1.61803...)</span>`;
+      }
+    }
+    
+    // Draw Fibonacci spiral
+    function drawSpiral(sequence) {
+      if (sequence.length < 5) return;
+      
+      const container = document.getElementById('spiral-container');
+      container.innerHTML = '';
+      
+      const size = Math.min(container.clientWidth, 500);
+      const svg = d3.select('#spiral-container')
+        .append('svg')
+        .attr('class', 'spiral-svg')
+        .attr('width', size)
+        .attr('height', size)
+        .attr('viewBox', `0 0 ${size} ${size}`);
+      
+      const g = svg.append('g')
+        .attr('transform', `translate(${size/2}, ${size/2})`);
+      
+      // Calculate scale factor based on the largest Fibonacci number
+      const maxFib = Math.max(...sequence);
+      const scale = Math.min(size / 2 / Math.sqrt(maxFib), 2);
+      
+      // Starting position and direction
+      let x = 0, y = 0;
+      let dir = 0; // 0: right, 1: down, 2: left, 3: up
+      
+      // Draw squares
+      for (let i = 0; i < sequence.length && i < 10; i++) {
+        const side = Math.sqrt(sequence[i]) * scale;
+        
+        // Position based on direction
+        switch(dir) {
+          case 0: // right
+            x = x;
+            y = y - side;
+            break;
+          case 1: // down
+            x = x - side;
+            y = y;
+            break;
+          case 2: // left
+            x = x;
+            y = y + side;
+            break;
+          case 3: // up
+            x = x + side;
+            y = y;
+            break;
+        }
+        
+        // Draw square with delay for animation
+        const square = g.append('rect')
+          .attr('x', x)
+          .attr('y', y)
+          .attr('width', side)
+          .attr('height', side)
+          .attr('fill', 'none')
+          .attr('stroke', `hsl(${240 + i*10}, 70%, 50%)`)
+          .attr('stroke-width', 2)
+          .attr('opacity', 0);
+        
+        square.transition()
+          .delay(i * 300)
+          .duration(300)
+          .attr('opacity', 1);
+        
+        // Draw quarter-circle (arc) within the square
+        let arcStartX, arcStartY, arcEndX, arcEndY;
+        let largeArcFlag = 0;
+        
+        switch(dir) {
+          case 0: // right - arc in bottom-right
+            arcStartX = x + side;
+            arcStartY = y + side;
+            arcEndX = x;
+            arcEndY = y + side;
+            break;
+          case 1: // down - arc in bottom-left
+            arcStartX = x;
+            arcStartY = y + side;
+            arcEndX = x;
+            arcEndY = y;
+            break;
+          case 2: // left - arc in top-left
+            arcStartX = x;
+            arcStartY = y;
+            arcEndX = x + side;
+            arcEndY = y;
+            break;
+          case 3: // up - arc in top-right
+            arcStartX = x + side;
+            arcStartY = y;
+            arcEndX = x + side;
+            arcEndY = y + side;
+            break;
+        }
+        
+        const path = g.append('path')
+          .attr('d', `M ${arcStartX} ${arcStartY} A ${side} ${side} 0 0 1 ${arcEndX} ${arcEndY}`)
+          .attr('fill', 'none')
+          .attr('stroke', `hsl(${240 + i*10}, 70%, 60%)`)
+          .attr('stroke-width', 2)
+          .attr('opacity', 0)
+          .attr('stroke-dasharray', side * Math.PI / 2)
+          .attr('stroke-dashoffset', side * Math.PI / 2);
+        
+        path.transition()
+          .delay(i * 300)
+          .duration(600)
+          .attr('opacity', 1)
+          .attr('stroke-dashoffset', 0);
+        
+        // Update direction for next square (clockwise rotation)
+        dir = (dir + 1) % 4;
+      }
+    }
+    
+    // Generate button click handler
+    function generate() {
+      // Validate inputs
+      const startInput = document.getElementById('fnum');
+      const countInput = document.getElementById('TextInput');
+      const start = parseInt(startInput.value);
+      const count = parseInt(countInput.value);
+      
+      let hasError = false;
+      
+      if (isNaN(start) || start < 0) {
+        document.getElementById('fnum-error').style.display = 'block';
+        hasError = true;
+      } else {
+        document.getElementById('fnum-error').style.display = 'none';
+      }
+      
+      if (isNaN(count) || count < 1 || count > 50) {
+        document.getElementById('count-error').style.display = 'block';
+        hasError = true;
+      } else {
+        document.getElementById('count-error').style.display = 'none';
+      }
+      
+      if (hasError) return;
+      
+      // Show loading indicator
+      document.getElementById('loading').style.display = 'flex';
+      
+      // Reset visualization
+      document.getElementById('visualization').classList.remove('show');
+      
+      // Use setTimeout to allow the loading animation to be visible
+      setTimeout(() => {
+        // Generate sequence
+        const sequence = fibonacci(start, count);
+        
+        // Hide loading and display results
+        document.getElementById('loading').style.display = 'none';
+        displayFibonacci(sequence);
+        
+        // Show and populate visualization
+        const visualization = document.getElementById('visualization');
+        visualization.classList.add('show');
+        
+        // Draw spiral after a short delay
+        setTimeout(() => {
+          drawSpiral(sequence);
+        }, 500);
+      }, 800); // Simulate calculation time
+    }
+    
+    // Reset form
+    function resetForm() {
+      document.getElementById('fnum').value = '0';
+      document.getElementById('TextInput').value = '10';
+      document.getElementById('fnum-error').style.display = 'none';
+      document.getElementById('count-error').style.display = 'none';
+      document.getElementById('fibo-container').innerHTML = '';
+      document.getElementById('visualization').classList.remove('show');
+      document.getElementById('golden-ratio').innerHTML = 
+        '<span>As the sequence progresses, the ratio between consecutive numbers approaches φ (phi): 1.61803...</span>';
+    }
+    
+    // Toggle dark/light theme
+    function toggleTheme() {
+      const body = document.body;
+      const themeIcon = document.querySelector('.theme-toggle i');
+      
+      if (body.classList.contains('dark-mode')) {
+        body.classList.remove('dark-mode');
+        themeIcon.classList.remove('fa-sun');
+        themeIcon.classList.add('fa-moon');
+      } else {
+        body.classList.add('dark-mode');
+        themeIcon.classList.remove('fa-moon');
+        themeIcon.classList.add('fa-sun');
+      }
+    }
+    
+    // Initialize with some values on page load
+    window.onload = function() {
+      // Generate default sequence after a short delay to allow for page load animations
+      setTimeout(() => {
+        generate();
+      }, 1000);
+    };
+  </script>
+</body>
+</html>
